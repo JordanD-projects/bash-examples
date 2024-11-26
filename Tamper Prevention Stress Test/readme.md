@@ -1,0 +1,2 @@
+# Stress Test Tamper Prevention
+- This script loops through and attempts to delete a bunch of different directories that Jamf Protect needs in order to function to make sure an end user cannot delete a directory important to Jamf Protect being able to Protect a company computer. 

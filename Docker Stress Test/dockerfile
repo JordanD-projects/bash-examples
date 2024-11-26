@@ -1,0 +1,68 @@
+# Use the ubuntu Linux base image
+FROM ubuntu:latest
+
+# Install necessary packages
+RUN apt-get update && \
+    apt-get install -y \
+    ca-certificates \
+    golang \
+    parallel \
+    build-essential \
+    gcc \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables - these are accessible in all scripts being run. 
+## Set "NUM_ITERATIONS_X" to the number of times you want to run that particular test
+## Set RUN_X_X to 1 to run the test or 0 to not run the test
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+# chmod.sh vars:
+ENV RUN_CHMOD 0
+ENV NUM_ITERATIONS_CHMOD 100000
+
+# delete.sh vars:
+ENV RUN_DELETE 0
+ENV NUM_ITERATIONS_DELETE 100000
+
+# create.sh vars:
+ENV RUN_CREATE 0
+ENV NUM_ITERATIONS_CREATE 100000
+
+# eicar_stress_test.sh cars:
+ENV RUN_EICAR 0
+ENV NUM_ITERATIONS_EICAR 10000
+
+# auth_event_stress_test.sh vars:
+ENV RUN_AUTH_EVENTS 0
+ENV NUM_ITERATIONS_AUTH_EVENTS 100000
+
+# tamper_prevention.sh vars:
+ENV RUN_TAMP_PREV 0
+ENV NUM_ITERATIONS_TAMP_PREV 100000
+
+# Create a directory for your Go code
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+
+# Copy script into the container
+COPY helloworld.c /scripts/helloworld.c
+COPY lorem_ipsum.txt /scripts/lorem_ipsum.txt
+COPY chmod.sh /scripts/chmod.sh
+COPY delete.sh /scripts/delete.sh
+COPY create.sh /scripts/create.sh
+COPY eicar_stress_test.sh /scripts/eicar_stress_test.sh
+COPY auth_event_stress_test.sh /scripts/auth_event_stress_test.sh
+
+# Set working directory
+WORKDIR /scripts
+
+# Make scripts executable
+RUN chmod +x chmod.sh create.sh delete.sh auth_event_stress_test.sh helloworld.c eicar_stress_test.sh
+
+# Define the entry point script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Set the entry point for the container
+ENTRYPOINT ["/entrypoint.sh"]
